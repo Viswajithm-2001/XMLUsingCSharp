@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Xml;
 using System.Collections.Generic;
 namespace XML_Prac;
@@ -10,120 +10,66 @@ public class FoodDetails
     public string Description { get; set; }
     public int Calories { get; set; }
 
-    //Using XML node
-    public void FDReadFromXML(XmlNode fdNode)
-    {
-        XmlNode nameNode = fdNode["name"];
-        XmlNode priceNode = fdNode["price"];
-        XmlNode descriptionNode = fdNode["description"];
-        XmlNode caloriesNode = fdNode["calories"];
-        if(nameNode !=null && priceNode !=null && descriptionNode!=null && caloriesNode != null)
-        {
-            Name = nameNode.InnerText;
-            Price = double.Parse(priceNode.InnerText.Trim('$'));
-            Description = descriptionNode.InnerText;
-            Calories = int.Parse(caloriesNode.InnerText);
-        }
-        else{
-            return;
-        }
+    // public void FoodDetailsReadFromXML(XmlReader foodDetailsReader)
+    // {
+    //     foodDetailsReader.ReadToFollowing("name");
+    //     Name = foodDetailsReader.ReadElementContentAsString();
+    //     foodDetailsReader.ReadToFollowing("price");
+    //     Price = double.Parse(foodDetailsReader.ReadElementContentAsString().Trim('$'));
+    //     foodDetailsReader.ReadToFollowing("description");
+    //     Description = foodDetailsReader.ReadElementContentAsString();
+    //     foodDetailsReader.ReadToFollowing("calories");
+    //     Calories = int.Parse(foodDetailsReader.ReadElementContentAsString());
+    // }
 
-    }
-    
-    //using XML Reader
-    public void FoodDetailsReadFromXML(XmlReader foodDetailsReader)
-    {
-        foodDetailsReader.ReadToFollowing("name");
-        Name = foodDetailsReader.ReadElementContentAsString();
-        foodDetailsReader.ReadToFollowing("price");
-        Price = double.Parse(foodDetailsReader.ReadElementContentAsString().Trim('$'));
-        foodDetailsReader.ReadToFollowing("description");
-        Description = foodDetailsReader.ReadElementContentAsString();
-        foodDetailsReader.ReadToFollowing("calories");
-        Calories = int.Parse(foodDetailsReader.ReadElementContentAsString());
-    }
-    public void WriteToXML()
-    {
-
-    }
+    // public void FoodDetailsWriteToXML(XmlWriter writer)
+    // {
+    //     writer.WriteElementString("name", Name);
+    //     writer.WriteElementString("price", $"${Price}");
+    //     writer.WriteElementString("description", Description);
+    //     writer.WriteElementString("calories", $"{Calories}");
+    // }
 }
 public class Food
 {
     public int OrderID { get; set; }
     public FoodDetails FoodDetails { get; set; } = new FoodDetails();
 
-    //Using XML node
-    public void FReadFromXML(XmlNode fdNode)
-    {
-        if(fdNode.Attributes["orderid"]!=null)
-        {
-            // FoodDetails foodDetails = new FoodDetails();
-            OrderID = int.Parse(fdNode.Attributes["orderid"].Value);
-            FoodDetails.FDReadFromXML(fdNode);
-            // FoodDetails = foodDetails;
-        }
-        else
-        {
-            return;
-        }
-    }
-    
-    //using XML reader
-    public void FoodReadFromXML(XmlReader foodReader)
-    {
-        if(foodReader.HasAttributes)
-        {
-            OrderID = int.Parse(foodReader.GetAttribute("orderid"));
-            FoodDetails.FoodDetailsReadFromXML(foodReader);
+    // public void FoodReadFromXML(XmlReader foodReader)
+    // {
+    //     if (foodReader.HasAttributes)
+    //     {
+    //         OrderID = int.Parse(foodReader.GetAttribute("orderid"));
+    //         FoodDetails.FoodDetailsReadFromXML(foodReader);
 
-        }
-        else
-        {
-            return;
-        }
-    }
-    public void WriteToXML()
-    {
+    //     }
+    //     else
+    //     {
+    //         return;
+    //     }
+    // }
 
-    }
+    // public void FoodWriteToXML(XmlWriter writer)
+    // {
+    //     writer.WriteStartElement("food");
+    //     writer.WriteAttributeString("orderid", OrderID.ToString());
+    //     FoodDetails.FoodDetailsWriteToXML(writer);
+    //     writer.WriteEndElement();
+    // }
 }
 public class LunchMenu
 {
     public List<Food> Foods { get; set; } = new List<Food>();
 
-    //using XML Node
-    public void LunchMenuReadFromXML(XmlNode root)
-    {
-        // XmlNode root = doc.DocumentElement;
-        if (root.Name != "lunch_menu")
-        {
-            System.Console.WriteLine("Invalid");
-            return;
-        }
-        foreach(XmlNode node in root.ChildNodes)
-        {
-            Food food = new Food();
-            food.FReadFromXML(node);
-            Foods.Add(food);
-        }
-        // Food.FReadFromXML(root);
-
-    }
-    
-    //using XML reader
-    public void LunchMenuReadFromXML(XmlReader reader)
-    {
-        while(reader.ReadToFollowing("food"))
-        {
-            Food food = new Food();
-            food.FoodReadFromXML(reader);
-            Foods.Add(food);
-        }
-    }
-    public void WriteToXML()
-    {
-
-    }
+    // public void LunchMenuWriteToXML(XmlWriter writer)
+    // {
+    //     writer.WriteStartElement("lunch_menu");
+    //     foreach (Food food in Foods)
+    //     {
+    //         food.FoodWriteToXML(writer);
+    //     }
+    //     writer.WriteEndElement();
+    // }
 }
 
 class Program
@@ -132,28 +78,58 @@ class Program
     public static void Main(string[] args)
     {
         string filePath = "FoodCatelog3.xml"; // Path to your XML file
-
-        
-
-        ReadFromXML(filePath);
+        ReadFromXMLFile(filePath);
+        string outputFile = "output.xml"; //path to output file
+        WriteToXmlFile(outputFile);
 
     }
-    public static void ReadFromXML(string path)
+
+    //reading xml
+    //read form Food details
+    public static FoodDetails FoodDetailsReadFromXML(XmlReader foodDetailsReader)
     {
-        // XmlDocument doc = new XmlDocument();
-        // doc.Load(path);
-        // XmlNode root = doc.DocumentElement;
-        // if(root==null || root.Name != "lunch_menu")
-        // {
-        //     System.Console.WriteLine("Invalid");
-        //     return;
-        // }
-        // lunchMenu.LunchMenuReadFromXML(root);
-        
-        using(XmlReader reader = XmlReader.Create(path))
+        FoodDetails foodDetails = new FoodDetails();
+        foodDetailsReader.ReadToFollowing("name");
+        foodDetails.Name = foodDetailsReader.ReadElementContentAsString();
+        foodDetailsReader.ReadToFollowing("price");
+        foodDetails.Price = double.Parse(foodDetailsReader.ReadElementContentAsString().Trim('$'));
+        foodDetailsReader.ReadToFollowing("description");
+        foodDetails.Description = foodDetailsReader.ReadElementContentAsString();
+        foodDetailsReader.ReadToFollowing("calories");
+        foodDetails.Calories = int.Parse(foodDetailsReader.ReadElementContentAsString());
+
+        return foodDetails;
+    }
+
+    //read from Food
+    public static Food FoodReadFromXML(XmlReader foodReader)
+    {
+        Food food = new Food();
+        if (foodReader.HasAttributes)
+        {
+            food.OrderID = int.Parse(foodReader.GetAttribute("orderid"));
+            food.FoodDetails = FoodDetailsReadFromXML(foodReader);
+        }
+        return food;
+    }
+
+    //read from Lunch menu
+    public static void LunchMenuReadFromXML(XmlReader reader)
+    {
+        while (reader.ReadToFollowing("food"))
+        {
+            Food food = FoodReadFromXML(reader);
+            lunchMenu.Foods.Add(food);
+        }
+    }
+
+    //reading from xml file
+    public static void ReadFromXMLFile(string path)
+    {
+        using (XmlReader reader = XmlReader.Create(path))
         {
             reader.ReadToFollowing("lunch_menu");
-            lunchMenu.LunchMenuReadFromXML(reader);
+            LunchMenuReadFromXML(reader);
         }
 
         System.Console.WriteLine("success");
@@ -164,33 +140,49 @@ class Program
         }
 
     }
-    public static void WriteToXml(string filePath)
+
+    //writing XML
+    //writing Food Details Data
+    public static void FoodDetailsWriteToXML(XmlWriter writer,FoodDetails foodDetails)
+    {
+        writer.WriteElementString("name", foodDetails.Name);
+        writer.WriteElementString("price", $"${foodDetails.Price}");
+        writer.WriteElementString("description", foodDetails.Description);
+        writer.WriteElementString("calories", $"{foodDetails.Calories}");
+    }
+    //writing Food Data
+    public static void FoodWriteToXML(XmlWriter writer, Food food)
+    {
+        writer.WriteStartElement("food");
+        writer.WriteAttributeString("orderid", food.OrderID.ToString());
+        FoodDetailsWriteToXML(writer, food.FoodDetails);
+        writer.WriteEndElement();
+    }
+
+    //writing Lunch menu Data
+    public static void LunchMenuWriteToXML(XmlWriter writer)
+    {
+        writer.WriteStartElement("lunch_menu");
+        foreach (Food food in lunchMenu.Foods)
+        {
+            FoodWriteToXML(writer,food);
+        }
+        writer.WriteEndElement();
+    }
+
+
+    //writing to Xml file
+    public static void WriteToXmlFile(string outputFile)
     {
         XmlWriterSettings settings = new XmlWriterSettings
         {
             Indent = true
-        }; // for indentation and proper indentation
+        };
 
-        // Create an XmlWriter for writing to the file
-        using (XmlWriter writer = XmlWriter.Create(filePath, settings))
+        using (XmlWriter writer = XmlWriter.Create(outputFile, settings))
         {
-            // Write the start element for the dinner menu
-            writer.WriteStartElement("lunch_menu");
-
-            // Write each food item
-            foreach (Food food in lunchMenu.Foods)
-            {
-                writer.WriteStartElement("food");
-                writer.WriteAttributeString("order", food.OrderID.ToString());
-                writer.WriteElementString("name", food.FoodDetails.Name);
-                writer.WriteElementString("price", food.FoodDetails.Price.ToString("C")); // Format price as currency
-                writer.WriteElementString("description", food.FoodDetails.Description);
-                writer.WriteElementString("calories", food.FoodDetails.Calories.ToString());
-                writer.WriteEndElement(); // Close food element
-            }
-            writer.WriteEndElement();//closes lunch_menu
-            Console.WriteLine("Xml file created");
-            writer.Close();//close file
+            LunchMenuWriteToXML(writer);
         }
     }
+
 }
